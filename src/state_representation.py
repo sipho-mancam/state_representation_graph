@@ -41,7 +41,16 @@ class Point:
     
     def __distance(self, x, y)->float:
         return np.sqrt(np.pow(self.__x - x, 2) + np.pow(self.__y - y, 2))
-    
+
+
+class State:
+    """
+    1. A state object is an object with a collection of points
+    2. It manages the objects and exposes points, while also exposing an indexing method for the points
+    """
+
+    def __init__(self) -> None:
+        self.__state = []
 
 
 point1 = Point(9, 0, 2)
