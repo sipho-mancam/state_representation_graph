@@ -1,12 +1,12 @@
 from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QVBoxLayout, QPushButton, QHBoxLayout, QLineEdit
 from PyQt5.QtGui import QImage, QPixmap, QResizeEvent
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, QTimer
 import cv2 as cv
 import sys
 import os
 from pathlib import Path
 import numpy as np
-from state_representation import Point
+from state_representation import State, Point
 
 
 
@@ -66,14 +66,14 @@ class RenderMap(QLabel):
             self.__rendering_image = cv.putText(self.__rendering_image, point.marker, 
                                                 (x-r, y+r//2), 
                                                 cv.FONT_HERSHEY_SIMPLEX, 0.4, (255, 255, 255), 1)
-            
-            self.__rendering_image = cv.putText(self.__rendering_image, str(point.id), 
-                                                (x-r*3, y-r), 
-                                                cv.FONT_HERSHEY_SIMPLEX, 0.4, (0, 0, 0), 1)
+            if point.marker == "0":
+                self.__rendering_image = cv.putText(self.__rendering_image, str(point.id), 
+                                                    (x-r*3, y-r), 
+                                                    cv.FONT_HERSHEY_SIMPLEX, 0.4, (0, 0, 0), 1)
             
 
-    def update_frame(self)->None:
-        self.draw_points()
+    def update_frame(self, points=None)->None:
+        self.draw_points(points)
         self.rerender_image()
 
 
@@ -81,11 +81,13 @@ class MainWindow(QWidget):
     def __init__(self, parent = None)->None:
         super().__init__(parent)
         self.__main__layout = QVBoxLayout(self)
-        self.__refresh_button = QPushButton("Refresh")
+        self.__refresh_button = QPushButton("Next")
         self.__calculate_button = QPushButton("Calculate Proximity")
         self.__items_count = QLineEdit()
         self.__items_count.setText("20")
         self.__top_layout = QHBoxLayout()
+        self.__state_manager = State()
+        self.__update_timer = QTimer()
 
         self.__refresh_button.setFixedWidth(200)
         self.__calculate_button.setFixedWidth(200)
@@ -101,20 +103,33 @@ class MainWindow(QWidget):
         self.__main__layout.addLayout(self.__top_layout)
         self.__main__layout.addWidget(self.__points_render)
 
-        self.__refresh_button.clicked.connect(self.refresh)
-        self.__items_count.returnPressed.connect(self.refresh)
+        self.__refresh_button.clicked.connect(self.next_button)
+        self.__items_count.returnPressed.connect(self.next_button)
         self.setLayout(self.__main__layout)
+        self.__update_timer.timeout.connect(self.update_state)
+        # self.__update_timer.start(100)
 
 
-    def refresh(self)->None:
-        txt = self.__items_count.text()
-        if not txt.isspace() and len(txt) > 0:
-            number = int(txt)
-        else:
-            number = 20
+    def next_button(self)->None:
+        tn_state, tn_p_1_state = self.__state_manager.get_next_state()
 
-        self.__points_render.generate_random_points(number)
-        self.__points_render.update_frame()
+        for point in tn_state:
+            point.marker = "0"#str(point.id)
+            # point.id = 0
+            point.set_color((0, 0, 255))
+
+        for point in tn_p_1_state:
+            if point.id != -2:
+                # print(point.id)
+                # point.marker = str(point.id)
+                point.set_color((255, 0, 0))
+            # point.id = 1
+  
+        tn_state.extend(tn_p_1_state)
+        self.__points_render.update_frame(tn_state)
+    
+    def update_state(self)->None:
+        self.next_button()
 
 
 def main():
