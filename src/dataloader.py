@@ -5,7 +5,7 @@ import numpy as np
 import math
 
 class Point:
-    MINIMUM_PROXIMITY_DISTANCE = 0.035
+    MINIMUM_PROXIMITY_DISTANCE = 0.025
     def __init__(self, x, y, id, data={}, col=(255, 0, 0),  **kwargs) -> None:
         self.__x = x
         self.__y = y

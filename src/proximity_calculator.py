@@ -74,7 +74,7 @@ from dataloader import Point
 #     def radius(self, r:int)->None:
 #         self.__radii = r
     
-
+# import pprint
 class ProximityCalculator:
     def __init__(self, x_list:list, o_list:list)->None:
         self.__x_list = x_list
@@ -97,17 +97,21 @@ class ProximityCalculator:
             for point in self.__x_list:
                 if point.id == id:
                     point.extras = ('vertex', node.get('vertex'))
+                    point.extras = ('distance', node.get('edges', {}).get(node.get('vertex')))
+                    # print(point.extras)
                     break
-
+        
         for point in self.__x_list:
             extras = point.extras
             id = extras.get('vertex')
+            if extras.get('distance') is not None and extras.get('distance') > Point.MINIMUM_PROXIMITY_DISTANCE:
+                continue
             if id is not None:
                 for o_point in self.__o_list:
                     if o_point.id == id:
-                        # print("I execute", point.id)
                         o_point.marker = str(point.id)
                         point.extras = ('found_det', o_point.extras['det'])
+                        # print(point.extras)
                         break
 
     def get_associated_points(self)->tuple:

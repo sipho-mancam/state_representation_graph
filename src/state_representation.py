@@ -15,6 +15,10 @@ class State:
 
     def get_next_state(self)->tuple[list[Point], list[Point]]:
         self.__current_state = self.__next_state
+        for point in self.__current_state:
+            point.extras.clear()
+            point.extras = ('det', point.data)
+
         self.__next_state = self.__data_loader.next()
         print(f"Before Match:\nPrevious State Count: {len(self.__current_state)}  Next State Count: {len(self.__next_state)}")
         # if len(self.__current_state) > len(self.__next_state):
@@ -37,39 +41,11 @@ class State:
         missed_dets = []
         for point in self.__current_state:
             if 'found_det' not in point.extras:
-                missed_dets.append(point.copy())
+                p = point.copy()
+                missed_dets.append(p)
         
         print(f"Missed Detections: {len(missed_dets)}")
-        self.__next_state.extend(missed_dets)
-        # missed_detection = []
-        # temp_next_state = []
-        # cleared  = False
-        # for point in self.__current_state:
-        #     cleared = False
-        #     idx = point.find_closest_match(self.__next_state)
-
-        #     if idx != -1:
-        #         p = self.__next_state.pop(idx)
-        #         # print(p)
-        #         p.marker = str(point.id)
-        #         temp_next_state.append(p)
-        #         cleared = True
-            
-        #     if not cleared:
-        #         p = point.copy()
-        #         # p.marker = "X"
-        #         # p.id = -2
-        #         # p.x *= 0.95   
-        #         p.set_color((0, 0, 0))
-        #         # print(point.x, point.y, point.id)
-        #         missed_detection.append(p)
-
-        # # Return all the found points that had matches
-        # self.__next_state.extend(temp_next_state)
-        
-        # print(f"Currently Found Missed Detections: {len(missed_detection)}")
-        # #Append all the missed points
-        # self.__next_state.extend(missed_detection)
-            
-                    
+        for p in missed_dets:
+            print(p.id)
+        self.__next_state.extend(missed_dets)            
 
